@@ -1,103 +1,129 @@
-import Image from "next/image";
+"use client";
+import { useUserRole } from '@/hooks/useUserRole';
+import { ActionCard } from '@/components/ActionCard';
+import { Calendar, Users, ClipboardCheck, Settings, History, CookingPot, BookMarked, Menu, MenuSquareIcon, MessageSquareDot } from 'lucide-react';
+import { useState } from 'react';
+import { useUser } from '@clerk/nextjs';
+import { useRouter } from 'next/navigation';
+import { Modal } from "@/components/Modal"; // Create this if you haven't
+import SendRequestPage from "./send-request/page"; // Adjust path if needed
 
 export default function Home() {
-  return (
-    <div className="grid grid-rows-[20px_1fr_20px] items-center justify-items-center min-h-screen p-8 pb-20 gap-16 sm:p-20 font-[family-name:var(--font-geist-sans)]">
-      <main className="flex flex-col gap-[32px] row-start-2 items-center sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={180}
-          height={38}
-          priority
-        />
-        <ol className="list-inside list-decimal text-sm/6 text-center sm:text-left font-[family-name:var(--font-geist-mono)]">
-          <li className="mb-2 tracking-[-.01em]">
-            Get started by editing{" "}
-            <code className="bg-black/[.05] dark:bg-white/[.06] px-1 py-0.5 rounded font-[family-name:var(--font-geist-mono)] font-semibold">
-              src/app/page.tsx
-            </code>
-            .
-          </li>
-          <li className="tracking-[-.01em]">
-            Save and see your changes instantly.
-          </li>
-        </ol>
+  // const { isAdmin, isStudent } = useUserRole();
+  const [showSendRequestModal, setShowSendRequestModal] = useState(false);
+  const { user, isLoaded } = useUser();
+  const { isLoading, isAdmin, isStudent } = useUserRole();
+  const router = useRouter();
+  // Redirect to sign-in if not logged in
+  if (isLoaded && !user) {
+    router.replace("/sign-in"); // or Clerk's sign-in URL
+    return null;
+  }
+  // Show loader while loading user or role
+  if (!isLoaded || isLoading) {
+    return (
+      <div className="flex items-center justify-center h-screen">
+        <div className="loading loading-spinner loading-lg" />
+      </div>
+    );
+  }
 
-        <div className="flex gap-4 items-center flex-col sm:flex-row">
-          <a
-            className="rounded-full border border-solid border-transparent transition-colors flex items-center justify-center bg-foreground text-background gap-2 hover:bg-[#383838] dark:hover:bg-[#ccc] font-medium text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 sm:w-auto"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={20}
-              height={20}
-            />
-            Deploy now
-          </a>
-          <a
-            className="rounded-full border border-solid border-black/[.08] dark:border-white/[.145] transition-colors flex items-center justify-center hover:bg-[#f2f2f2] dark:hover:bg-[#1a1a1a] hover:border-transparent font-medium text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 w-full sm:w-auto md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Read our docs
-          </a>
-        </div>
-      </main>
-      <footer className="row-start-3 flex gap-[24px] flex-wrap items-center justify-center">
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/file.svg"
-            alt="File icon"
-            width={16}
-            height={16}
-          />
-          Learn
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/window.svg"
-            alt="Window icon"
-            width={16}
-            height={16}
-          />
-          Examples
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/globe.svg"
-            alt="Globe icon"
-            width={16}
-            height={16}
-          />
-          Go to nextjs.org →
-        </a>
-      </footer>
+  return (
+    <div className="container max-w-7xl mx-auto pt-0 px-4">
+    <div className="rounded-lg bg-card p-6 border shadow-sm mb-10">
+      <h1 className="text-4xl font-bold bg-gradient-to-r from-emerald-600 to-teal-500 bg-clip-text text-transparent">
+        Welcome back!
+      </h1>
+      <p className="text-muted-foreground mt-2">
+        {isStudent
+          ? "Manage and mark your Daily Meal"
+          : "view and manage all students meal marking easily"}
+      </p>
     </div>
+
+
+      {isAdmin ? (
+        <>
+          <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6">
+            <ActionCard
+              title="Manage Students"
+              description="View and manage all student meal markings"
+              icon={Users}
+              href="/manage-students"
+              gradientFrom="blue-500"
+              gradientTo="blue-600"
+            />
+            <ActionCard
+              title="Todays Order"
+              description="View Today's No. of meal to prepare"
+              icon={Calendar}
+              href="/daily-order"
+              gradientFrom="emerald-500"
+              gradientTo="emerald-600"
+            />
+            <ActionCard
+              title="View Request"
+              description="late marking student request"
+              icon={MessageSquareDot}
+              href="/notifications"
+              gradientFrom="emerald-500"
+              gradientTo="emerald-600"
+            />
+            <ActionCard
+              title="Meal Settings"
+              description="Configure meal timings and options"
+              icon={Settings}
+              href="/meal-settings"
+              gradientFrom="purple-500"
+              gradientTo="purple-600"
+            />
+          </div>
+        </>
+      ) : (
+        <>
+          <div className="mb-6">
+            <h1 className="text-3xl font-bold">Your Meal Dashboard</h1>
+            <p className="text-muted-foreground mt-1">Mark your meals on time</p>
+          </div>
+
+          <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6">
+            <ActionCard
+              title="Mark Meals"
+              description="Mark your daily meals for breakfast, lunch, and dinner"
+              icon={ClipboardCheck}
+              href="/calculate-meal"
+              gradientFrom="emerald-500"
+              gradientTo="emerald-600"
+            />
+            <ActionCard
+            title="Late marking request"
+            description="Forgot to mark? Send request to admin"
+            icon={History}
+            onClick={() => setShowSendRequestModal(true)}
+             gradientFrom="orange-500"
+             gradientTo="orange-600"
+            />
+
+             <ActionCard
+              title="MENU-Card"
+              description="see whats cokking today"
+              icon={MenuSquareIcon}
+              href="/menu-card"
+              gradientFrom="orange-500"
+              gradientTo="orange-600"
+            />
+          
+            
+          </div>
+          <Modal open={showSendRequestModal} onClose={() => setShowSendRequestModal(false)}>
+          <SendRequestPage />
+          </Modal>
+          {/* MenuCard component stays at root level */}
+          
+        </>
+      )}
+    </div>
+    
+
   );
-}
+};
